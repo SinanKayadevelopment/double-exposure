@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <title>Double Exposure - Free Online Video Effect Maker (True Detective Style)</title>
+    <meta name="description"
+        content="Create cinematic double exposure videos in seconds. Free online tool. No sign-up required. Merge photos and videos instantly in your browser.">
+    <meta name="keywords"
+        content="double exposure video, true detective intro maker, silhouette video effect, motion portrait, free online video editor, double exposure effect, video inside silhouette">
+    <meta name="author" content="Double Exposure">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Double Exposure - Free Online Video Effect Maker">
+    <meta property="og:description"
+        content="Create cinematic double exposure videos in seconds. Free online tool. No sign-up required.">
+    <meta property="og:url" content="https://doubleexposure.app">
+    <meta property="og:site_name" content="Double Exposure">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Double Exposure - Free Online Video Effect Maker">
+    <meta name="twitter:description" content="Create cinematic double exposure videos in seconds. Free online tool.">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Double Exposure",
+        "applicationCategory": "MultimediaApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "operatingSystem": "Any (Browser-based)",
+        "permissions": "No registration required",
+        "description": "Create cinematic double exposure videos with AI-powered background removal. Free online tool that runs entirely in your browser.",
+        "featureList": [
+            "AI-powered background removal",
+            "Real-time video preview",
+            "Client-side processing (privacy-first)",
+            "No sign-up required",
+            "Free to use",
+            "Export as video"
+        ],
+        "browserRequirements": "Requires JavaScript. Works in Chrome, Firefox, Safari, Edge."
+    }
+    </script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- TensorFlow.js and BodyPix for better background removal -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+            min-height: 100vh;
+            color: #1a1a2e;
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+            border-radius: 24px;
+            padding: 60px 40px;
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(20px, 20px);
+            }
+        }
+
+        .upload-zone {
+            border: 2px dashed #e0e7ff;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover {
+            border-color: #6366f1;
+            background: #f8f9ff;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15);
+        }
+
+        .upload-zone.has-file {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #6366f1;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: 2px solid #6366f1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #6366f1;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-record {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-record:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-record.recording {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        .canvas-container {
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+
+        .control-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .control-card:hover {
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e0e7ff;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.6);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.6);
+        }
+
+        .preview-thumbnail {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .status-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .step-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin: 0 auto 16px;
+        }
+
+        .loading-overlay {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .spinner {
+            border: 4px solid #e0e7ff;
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #segmentCanvas {
+            display: none;
+        }
+
+        .icon-upload {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<body class="p-6">
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto mb-8 text-center">
+        <h1 class="logo-text text-3xl">Double Exposure</h1>
+
+        <!-- Trust Badges -->
+        <div class="flex flex-wrap justify-center gap-4 mt-6">
+            <div
+                class="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                <span class="text-2xl">🚫</span>
+                <span class="text-sm font-semibold">No Sign Up Required</span>
+            </div>
+            <div
+                class="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                <span class="text-2xl">🔒</span>
+                <span class="text-sm font-semibold">100% Client-Side</span>
+            </div>
+            <div
+                class="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                <span class="text-2xl">⚡</span>
+                <span class="text-sm font-semibold">Powered by AI</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <div class="max-w-7xl mx-auto">
+        <div class="hero-section relative">
+            <h2 class="text-5xl md:text-6xl font-bold mb-4 relative z-10">
+                Create <span class="gradient-text">Double Exposure</span><br>Designs Easily
+            </h2>
+            <p class="text-xl text-gray-600 mb-8 relative z-10 max-w-2xl mx-auto">
+                Turn Your Portraits into Cinematic Art.<br>
+                Create beautiful double exposure effects with AI-powered background removal.<br>
+                Upload your portrait and video to get started!
+            </p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <!-- Portrait Upload -->
+            <div class="upload-zone" id="portraitZone">
+                <input type="file" id="portraitInput" accept="image/*" class="hidden">
+                <div id="portraitPreview" class="hidden">
+                    <img id="portraitImg" class="preview-thumbnail">
+                    <span class="status-badge">✓ Portrait Loaded</span>
+                </div>
+                <div id="portraitPlaceholder">
+                    <svg class="icon-upload" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2">Upload Portrait</h3>
+                    <p class="text-gray-500 text-sm">Click to select your portrait image</p>
+                </div>
+            </div>
+
+            <!-- Texture Upload (Image or Video) -->
+            <div class="upload-zone" id="textureZone">
+                <input type="file" id="textureInput" accept="image/*,video/*" class="hidden">
+                <div id="texturePreview" class="hidden">
+                    <img id="textureImgPreview" class="preview-thumbnail hidden">
+                    <video id="textureVideoPreview" class="preview-thumbnail hidden" muted loop></video>
+                    <span class="status-badge">✓ Texture Loaded</span>
+                </div>
+                <div id="texturePlaceholder">
+                    <svg class="icon-upload" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    <h3 class="text-xl font-semibold mb-2">Upload Texture</h3>
+                    <p class="text-gray-500 text-sm">Image or Video (mountains, ocean, city, etc.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Process Button -->
+        <div class="text-center mb-12">
+            <button id="processBtn" class="btn-primary text-lg px-12 py-4" disabled>
+                Start Creating Now →
+            </button>
+        </div>
+
+        <!-- Canvas Preview -->
+        <div class="canvas-container mb-12" id="canvasSection" style="display: none;">
+            <canvas id="mainCanvas" class="w-full" width="1920" height="1080"></canvas>
+        </div>
+
+        <!-- Controls -->
+        <div class="grid md:grid-cols-6 gap-6 mb-12" id="controlsSection" style="display: none;">
+            <div class="control-card">
+                <label class="block text-sm font-semibold mb-3 text-gray-700">Video Blend</label>
+                <input type="range" id="videoBlend" min="0" max="100" value="70" class="slider">
+                <div class="text-center mt-3 text-sm font-semibold text-gray-600"><span id="blendValue">70</span>%</div>
+            </div>
+
+            <div class="control-card">
+                <label class="block text-sm font-semibold mb-3 text-gray-700">Texture Fade</label>
+                <input type="range" id="textureFade" min="0" max="100" value="0" class="slider">
+                <div class="text-center mt-3 text-sm font-semibold text-gray-600"><span id="fadeValue">0</span>%</div>
+            </div>
+
+            <div class="control-card">
+                <label class="block text-sm font-semibold mb-3 text-gray-700">Background Blur</label>
+                <input type="range" id="bgBlur" min="0" max="20" value="0" class="slider">
+                <div class="text-center mt-3 text-sm font-semibold text-gray-600"><span id="blurValue">0</span>px</div>
+            </div>
+
+            <div class="control-card">
+                <label class="block text-sm font-semibold mb-3 text-gray-700">Video Scale</label>
+                <input type="range" id="videoScale" min="50" max="200" value="100" class="slider">
+                <div class="text-center mt-3 text-sm font-semibold text-gray-600"><span id="scaleValue">100</span>%
+                </div>
+            </div>
+
+            <div class="control-card">
+                <label class="block text-sm font-semibold mb-3 text-gray-700">Position X</label>
+                <input type="range" id="videoPosX" min="-100" max="100" value="0" class="slider">
+                <div class="text-center mt-3 text-sm font-semibold text-gray-600"><span id="posXValue">0</span>%</div>
+            </div>
+
+            <div class="control-card">
+                <label class="block text-sm font-semibold mb-3 text-gray-700">Position Y</label>
+                <input type="range" id="videoPosY" min="-100" max="100" value="0" class="slider">
+                <div class="text-center mt-3 text-sm font-semibold text-gray-600"><span id="posYValue">0</span>%</div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-4 justify-center mb-12" id="actionsSection" style="display: none;">
+            <!-- Download Image Button (for static textures) -->
+            <button id="downloadImageBtn" class="btn-primary text-lg px-10 py-4" style="display: none;">
+                ⬇ Download Image
+            </button>
+
+            <!-- Record Video Button (for video textures) -->
+            <button id="recordBtn" class="btn-record text-lg px-10 py-4" style="display: none;">
+                ● Record (5s)
+            </button>
+
+            <!-- Download Video Button (appears after recording) -->
+            <button id="downloadVideoBtn" class="btn-primary text-lg px-10 py-4" style="display: none;">
+                ⬇ Download Video
+            </button>
+        </div>
+
+        <!-- Featured Designs Gallery -->
+        <div class="mt-20 mb-12">
+            <p class="text-center text-sm text-gray-500 mb-4 uppercase tracking-wider">DISCOVER WHAT PEOPLE MADE WITH
+                DOUBLE EXPOSURE</p>
+            <h3 class="text-3xl font-bold text-center mb-4">Stand Out with Eye-Catching<br>Double Exposure Designs</h3>
+            <p class="text-center text-gray-600 mb-8">Featured Designs</p>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div
+                    class="rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                    <img src="images/F0CMIIKKYR9WTYL.webp" alt="Double Exposure Example 1"
+                        class="w-full h-80 object-cover">
+                </div>
+                <div
+                    class="rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                    <img src="images/man+in+city+final.webp" alt="Double Exposure Example 2"
+                        class="w-full h-80 object-cover">
+                </div>
+                <div
+                    class="rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                    <img src="images/o1AJ9qDyyJNSpZWhUgGYc3MngFqoAMy9tfTNBoKhf763LYQai.webp"
+                        alt="Double Exposure Example 3" class="w-full h-80 object-cover">
+                </div>
+                <div
+                    class="rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                    <img src="images/pngtree-double-exposure-effect-a-man-face-and-city-skyline-picture-image_15462523.jpg"
+                        alt="Double Exposure Example 4" class="w-full h-80 object-cover">
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="mt-20 mb-12">
+            <h3 class="text-3xl font-bold text-center mb-12">Create Your Design in 4 Simple Steps</h3>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4 class="font-semibold mb-2">Upload Photo</h4>
+                    <p class="text-sm text-gray-600">Upload your portrait image</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4 class="font-semibold mb-2">Add Video</h4>
+                    <p class="text-sm text-gray-600">Select your texture video</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4 class="font-semibold mb-2">Customize</h4>
+                    <p class="text-sm text-gray-600">Adjust blend and position</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h4 class="font-semibold mb-2">Download</h4>
+                    <p class="text-sm text-gray-600">Record and save your video</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Content: How To Guide -->
+        <div class="mt-20 mb-12 max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold mb-8">How to Create a Double Exposure Video</h2>
+            <div class="bg-white rounded-xl p-8 shadow-lg">
+                <ol class="space-y-4 text-gray-700">
+                    <li class="flex gap-4">
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full flex items-center justify-center font-bold">1</span>
+                        <div>
+                            <strong>Upload Your Portrait:</strong> Choose a high-quality portrait photo (JPG or PNG).
+                            The AI will automatically detect and isolate the person from the background.
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full flex items-center justify-center font-bold">2</span>
+                        <div>
+                            <strong>Add Texture:</strong> Upload a video or image (ocean waves, city skyline, mountains,
+                            etc.) that will appear inside the person's silhouette.
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full flex items-center justify-center font-bold">3</span>
+                        <div>
+                            <strong>Customize:</strong> Adjust the blend intensity, add vignette fade, blur the
+                            background, and position the texture perfectly.
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span
+                            class="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full flex items-center justify-center font-bold">4</span>
+                        <div>
+                            <strong>Download:</strong> For static images, click "Download Image" to save as PNG. For
+                            videos, click "Record" to capture a 5-second clip and download as WebM.
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- SEO Content: Features -->
+        <div class="mt-20 mb-12">
+            <h2 class="text-3xl font-bold text-center mb-12">Why Choose Double Exposure?</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl p-8 shadow-lg text-center">
+                    <div class="text-5xl mb-4">🔒</div>
+                    <h3 class="text-xl font-bold mb-3">Privacy First</h3>
+                    <p class="text-gray-600">All processing happens in your browser. Your photos and videos never leave
+                        your device. No servers, no uploads, no tracking.</p>
+                </div>
+                <div class="bg-white rounded-xl p-8 shadow-lg text-center">
+                    <div class="text-5xl mb-4">⚡</div>
+                    <h3 class="text-xl font-bold mb-3">Lightning Fast</h3>
+                    <p class="text-gray-600">Powered by TensorFlow.js and BodyPix AI. Get professional results in
+                        seconds without waiting for cloud processing.</p>
+                </div>
+                <div class="bg-white rounded-xl p-8 shadow-lg text-center">
+                    <div class="text-5xl mb-4">🎨</div>
+                    <h3 class="text-xl font-bold mb-3">Full Control</h3>
+                    <p class="text-gray-600">Adjust blend, fade, blur, scale, and position. Create exactly the look you
+                        want with professional-grade controls.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Content: FAQ -->
+        <div class="mt-20 mb-12 max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold mb-8 text-center">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-bold mb-2">Is Double Exposure really free?</h3>
+                    <p class="text-gray-600">Yes! Double Exposure is 100% free to use. No hidden costs, no
+                        subscriptions, no watermarks. Create unlimited double exposure effects.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-bold mb-2">Do I need to create an account?</h3>
+                    <p class="text-gray-600">No sign-up required. Simply visit the page, upload your files, and start
+                        creating. Your privacy is our priority.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-bold mb-2">What file formats are supported?</h3>
+                    <p class="text-gray-600">For portraits: JPG, PNG. For textures: JPG, PNG (static images) or MP4,
+                        WebM (videos). Output: PNG for images, WebM for videos.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-bold mb-2">How do I save my creation?</h3>
+                    <p class="text-gray-600">For static textures, click "Download Image" to save as PNG. For video
+                        textures, click "Record (5s)" to capture a clip, then "Download Video" to save as WebM.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-bold mb-2">Is my data safe?</h3>
+                    <p class="text-gray-600">Absolutely. All processing happens locally in your browser using JavaScript
+                        and AI models. Your files never leave your device or get uploaded to any server.</p>
+                </div>
+                <div class="bg-white rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-bold mb-2">What browsers are supported?</h3>
+                    <p class="text-gray-600">Works best in modern browsers: Chrome, Firefox, Safari, and Edge. Make sure
+                        JavaScript is enabled for the AI features to work.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay"
+        class="loading-overlay fixed inset-0 flex flex-col items-center justify-center z-50 hidden">
+        <div class="spinner mb-6"></div>
+        <p class="text-2xl font-semibold text-gray-800 mb-2">Processing Background Removal</p>
+        <p class="text-gray-600">This may take a moment...</p>
+    </div>
+
+    <!-- Hidden Elements -->
+    <video id="hiddenTextureVideo" style="display: none;" muted loop></video>
+    <canvas id="segmentCanvas" width="1920" height="1080"></canvas>
+
+    <script>
+        // State
+        let portraitImage = null;
+        let maskCanvas = null;
+        let textureMedia = null; // Can be image or video
+        let textureType = null; // 'image' or 'video'
+        let animationId = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let isProcessed = false;
+        let bodyPixNet = null; // BodyPix model
+
+        // Elements
+        const portraitZone = document.getElementById('portraitZone');
+        const portraitInput = document.getElementById('portraitInput');
+        const portraitPreview = document.getElementById('portraitPreview');
+        const portraitPlaceholder = document.getElementById('portraitPlaceholder');
+        const portraitImg = document.getElementById('portraitImg');
+
+        const textureZone = document.getElementById('textureZone');
+        const textureInput = document.getElementById('textureInput');
+        const texturePreview = document.getElementById('texturePreview');
+        const texturePlaceholder = document.getElementById('texturePlaceholder');
+        const textureImgPreview = document.getElementById('textureImgPreview');
+        const textureVideoPreview = document.getElementById('textureVideoPreview');
+
+        const mainCanvas = document.getElementById('mainCanvas');
+        const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
+
+        const segmentCanvas = document.getElementById('segmentCanvas');
+        const segmentCtx = segmentCanvas.getContext('2d', { willReadFrequently: true });
+
+        const hiddenTextureVideo = document.getElementById('hiddenTextureVideo');
+
+        const videoBlendInput = document.getElementById('videoBlend');
+        const blendValue = document.getElementById('blendValue');
+        const textureFadeInput = document.getElementById('textureFade');
+        const fadeValue = document.getElementById('fadeValue');
+        const bgBlurInput = document.getElementById('bgBlur');
+        const blurValue = document.getElementById('blurValue');
+        const videoScaleInput = document.getElementById('videoScale');
+        const scaleValue = document.getElementById('scaleValue');
+        const videoPosXInput = document.getElementById('videoPosX');
+        const posXValue = document.getElementById('posXValue');
+        const videoPosYInput = document.getElementById('videoPosY');
+        const posYValue = document.getElementById('posYValue');
+
+        const processBtn = document.getElementById('processBtn');
+        const recordBtn = document.getElementById('recordBtn');
+        const downloadImageBtn = document.getElementById('downloadImageBtn');
+        const downloadVideoBtn = document.getElementById('downloadVideoBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        const canvasSection = document.getElementById('canvasSection');
+        const controlsSection = document.getElementById('controlsSection');
+        const actionsSection = document.getElementById('actionsSection');
+
+        // Initialize BodyPix
+        async function initBodyPix() {
+            if (!bodyPixNet) {
+                bodyPixNet = await bodyPix.load({
+                    architecture: 'MobileNetV1',
+                    outputStride: 16,
+                    multiplier: 0.75,
+                    quantBytes: 2
+                });
+            }
+            return bodyPixNet;
+        }
+
+        // Upload Handlers
+        portraitZone.addEventListener('click', () => portraitInput.click());
+        portraitInput.addEventListener('change', handlePortraitUpload);
+
+        textureZone.addEventListener('click', () => textureInput.click());
+        textureInput.addEventListener('change', handleTextureUpload);
+
+        function handlePortraitUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                portraitImage = new Image();
+                portraitImage.onload = () => {
+                    portraitImg.src = event.target.result;
+                    portraitPlaceholder.classList.add('hidden');
+                    portraitPreview.classList.remove('hidden');
+                    portraitZone.classList.add('has-file');
+                    checkReadyToProcess();
+                };
+                portraitImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleTextureUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const url = URL.createObjectURL(file);
+            const isVideo = file.type.startsWith('video/');
+
+            texturePlaceholder.classList.add('hidden');
+            texturePreview.classList.remove('hidden');
+            textureZone.classList.add('has-file');
+
+            if (isVideo) {
+                // Handle video
+                textureType = 'video';
+                textureImgPreview.classList.add('hidden');
+                textureVideoPreview.classList.remove('hidden');
+                textureVideoPreview.src = url;
+                textureVideoPreview.play();
+
+                textureMedia = hiddenTextureVideo; // Use the hidden video element
+                textureMedia.src = url;
+                textureMedia.loop = true;
+                textureMedia.muted = true;
+                // Don't play textureMedia here, it will be played in processBtn handler
+            } else {
+                // Handle image
+                textureType = 'image';
+                textureVideoPreview.classList.add('hidden');
+                textureImgPreview.classList.remove('hidden');
+                textureImgPreview.src = url;
+
+                textureMedia = new Image();
+                textureMedia.onload = () => {
+                    checkReadyToProcess();
+                };
+                textureMedia.src = url;
+            }
+
+            checkReadyToProcess();
+        }
+
+        function checkReadyToProcess() {
+            if (portraitImage && textureMedia) {
+                processBtn.disabled = false;
+            }
+        }
+
+        // Process Effect
+        processBtn.addEventListener('click', async () => {
+            if (!portraitImage || !textureMedia) return;
+
+            loadingOverlay.classList.remove('hidden');
+            processBtn.disabled = true;
+
+            try {
+                // Load BodyPix model
+                const net = await initBodyPix();
+
+                // Create a temporary canvas for the portrait
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = portraitImage.width;
+                tempCanvas.height = portraitImage.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(portraitImage, 0, 0);
+
+                // Perform segmentation with high quality settings
+                const segmentation = await net.segmentPerson(tempCanvas, {
+                    flipHorizontal: false,
+                    internalResolution: 'medium',
+                    segmentationThreshold: 0.7,
+                    maxDetections: 1,
+                    scoreThreshold: 0.2,
+                    nmsRadius: 20
+                });
+
+                // Create mask canvas
+                segmentCanvas.width = portraitImage.width;
+                segmentCanvas.height = portraitImage.height;
+
+                segmentCtx.clearRect(0, 0, segmentCanvas.width, segmentCanvas.height);
+
+                // Draw the original image
+                segmentCtx.drawImage(portraitImage, 0, 0);
+
+                // Apply mask using segmentation data
+                const imageData = segmentCtx.getImageData(0, 0, segmentCanvas.width, segmentCanvas.height);
+                const pixels = imageData.data;
+
+                // Apply the mask - make background transparent
+                for (let i = 0; i < segmentation.data.length; i++) {
+                    const shouldKeep = segmentation.data[i];
+                    if (!shouldKeep) {
+                        // Make this pixel transparent (it's background)
+                        pixels[i * 4 + 3] = 0; // Alpha channel
+                    }
+                }
+
+                segmentCtx.putImageData(imageData, 0, 0);
+                maskCanvas = segmentCanvas;
+
+                loadingOverlay.classList.add('hidden');
+                isProcessed = true;
+
+                canvasSection.style.display = 'block';
+                controlsSection.style.display = 'grid';
+                actionsSection.style.display = 'flex';
+
+                // Show appropriate button based on texture type
+                if (textureType === 'video') {
+                    recordBtn.style.display = 'inline-block';
+                    recordBtn.disabled = false; // Enable record button for video
+                    downloadImageBtn.style.display = 'none';
+                } else {
+                    downloadImageBtn.style.display = 'inline-block';
+                    downloadImageBtn.disabled = false; // Enable download image button for image
+                    recordBtn.style.display = 'none';
+                }
+
+                // Play video if texture is video
+                if (textureType === 'video') {
+                    textureMedia.play();
+                }
+
+                startAnimation();
+
+                // Scroll to canvas
+                canvasSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            } catch (error) {
+                console.error('Background removal failed:', error);
+                loadingOverlay.classList.add('hidden');
+                alert('Background removal failed. Please try again.');
+                processBtn.disabled = false;
+            }
+        });
+
+        // Animation Loop
+        let offCanvas = null;
+        let offCtx = null;
+
+        function startAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+
+            // Create off-screen canvas once
+            if (!offCanvas) {
+                offCanvas = document.createElement('canvas');
+                offCanvas.width = mainCanvas.width;
+                offCanvas.height = mainCanvas.height;
+                offCtx = offCanvas.getContext('2d', {
+                    willReadFrequently: true,
+                    alpha: true
+                });
+            }
+
+            function render() {
+                if (!isProcessed || !maskCanvas || !textureMedia || !portraitImage) return;
+
+                const canvasWidth = mainCanvas.width;
+                const canvasHeight = mainCanvas.height;
+
+                // Get blur value
+                const blurAmount = parseFloat(bgBlurInput.value);
+
+                // STEP 1: Draw the original background with blur
+                if (blurAmount > 0) {
+                    // Create a temporary canvas for blurred background
+                    const bgCanvas = document.createElement('canvas');
+                    bgCanvas.width = canvasWidth;
+                    bgCanvas.height = canvasHeight;
+                    const bgCtx = bgCanvas.getContext('2d');
+
+                    // Draw full image with blur
+                    bgCtx.filter = `blur(${blurAmount}px)`;
+                    bgCtx.drawImage(portraitImage, 0, 0, canvasWidth, canvasHeight);
+                    bgCtx.filter = 'none';
+
+                    // Remove person from blurred image (keep only background)
+                    const bgImageData = bgCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+                    const bgPixels = bgImageData.data;
+
+                    // Get mask data
+                    const maskImageData = segmentCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+                    const maskPixels = maskImageData.data;
+
+                    // Make person area transparent in blurred background
+                    for (let i = 0; i < maskPixels.length; i += 4) {
+                        if (maskPixels[i + 3] > 0) {
+                            // This pixel is part of the person, make it transparent
+                            bgPixels[i + 3] = 0;
+                        }
+                    }
+
+                    bgCtx.putImageData(bgImageData, 0, 0);
+
+                    // Draw blurred background to main canvas
+                    ctx.drawImage(bgCanvas, 0, 0);
+
+                    // Draw original person (no blur) on top
+                    ctx.drawImage(maskCanvas, 0, 0, canvasWidth, canvasHeight);
+                } else {
+                    // No blur, just draw original
+                    ctx.drawImage(portraitImage, 0, 0, canvasWidth, canvasHeight);
+                }
+
+                // STEP 2: Clear and prepare off-screen canvas for texture-filled silhouette
+                offCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+                // Calculate texture dimensions
+                const scale = parseFloat(videoScaleInput.value) / 100;
+                const posX = parseFloat(videoPosXInput.value) / 100;
+                const posY = parseFloat(videoPosYInput.value) / 100;
+
+                let textureWidth, textureHeight;
+
+                if (textureType === 'video') {
+                    textureWidth = textureMedia.videoWidth;
+                    textureHeight = textureMedia.videoHeight;
+                } else {
+                    textureWidth = textureMedia.width;
+                    textureHeight = textureMedia.height;
+                }
+
+                const textureAspect = textureWidth / textureHeight;
+                const canvasAspect = canvasWidth / canvasHeight;
+
+                let drawWidth, drawHeight, drawX, drawY;
+
+                if (textureAspect > canvasAspect) {
+                    drawHeight = canvasHeight * scale;
+                    drawWidth = drawHeight * textureAspect;
+                } else {
+                    drawWidth = canvasWidth * scale;
+                    drawHeight = drawWidth / textureAspect;
+                }
+
+                drawX = (canvasWidth - drawWidth) / 2 + (posX * canvasWidth);
+                drawY = (canvasHeight - drawHeight) / 2 + (posY * canvasHeight);
+
+                // Draw texture
+                offCtx.drawImage(textureMedia, drawX, drawY, drawWidth, drawHeight);
+
+                // Apply vignette/fade effect if enabled
+                const fadeAmount = parseFloat(textureFadeInput.value) / 100;
+                if (fadeAmount > 0) {
+                    // Create radial gradient for vignette
+                    const centerX = canvasWidth / 2;
+                    const centerY = canvasHeight / 2;
+                    const radius = Math.sqrt(centerX * centerX + centerY * centerY);
+
+                    const gradient = offCtx.createRadialGradient(
+                        centerX, centerY, radius * (1 - fadeAmount),
+                        centerX, centerY, radius
+                    );
+
+                    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+                    // Apply gradient as mask
+                    offCtx.globalCompositeOperation = 'destination-in';
+                    offCtx.fillStyle = gradient;
+                    offCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+                    offCtx.globalCompositeOperation = 'source-over';
+                }
+
+                // Apply person mask
+                offCtx.globalCompositeOperation = 'destination-in';
+                offCtx.drawImage(maskCanvas, 0, 0, canvasWidth, canvasHeight);
+                offCtx.globalCompositeOperation = 'source-over';
+
+                // STEP 3: Draw texture-filled person with opacity
+                const blendIntensity = parseFloat(videoBlendInput.value) / 100;
+                ctx.globalAlpha = blendIntensity;
+                ctx.drawImage(offCanvas, 0, 0);
+                ctx.globalAlpha = 1.0;
+
+                // Only continue animation if texture is video
+                if (textureType === 'video') {
+                    animationId = requestAnimationFrame(render);
+                }
+            }
+
+            render();
+
+            // If texture is image, re-render only when controls change
+            if (textureType === 'image') {
+                const reRender = () => {
+                    if (isProcessed) render();
+                };
+
+                videoBlendInput.removeEventListener('input', reRender);
+                textureFadeInput.removeEventListener('input', reRender);
+                bgBlurInput.removeEventListener('input', reRender);
+                videoScaleInput.removeEventListener('input', reRender);
+                videoPosXInput.removeEventListener('input', reRender);
+                videoPosYInput.removeEventListener('input', reRender);
+
+                videoBlendInput.addEventListener('input', reRender);
+                textureFadeInput.addEventListener('input', reRender);
+                bgBlurInput.addEventListener('input', reRender);
+                videoScaleInput.addEventListener('input', reRender);
+                videoPosXInput.addEventListener('input', reRender);
+                videoPosYInput.addEventListener('input', reRender);
+            }
+        }
+
+        // Control Updates
+        videoBlendInput.addEventListener('input', (e) => {
+            blendValue.textContent = e.target.value;
+        });
+
+        textureFadeInput.addEventListener('input', (e) => {
+            fadeValue.textContent = e.target.value;
+        });
+
+        bgBlurInput.addEventListener('input', (e) => {
+            blurValue.textContent = e.target.value;
+        });
+
+        videoScaleInput.addEventListener('input', (e) => {
+            scaleValue.textContent = e.target.value;
+        });
+
+        videoPosXInput.addEventListener('input', (e) => {
+            posXValue.textContent = e.target.value;
+        });
+
+        videoPosYInput.addEventListener('input', (e) => {
+            posYValue.textContent = e.target.value;
+        });
+
+        // Download Image (for static textures)
+        downloadImageBtn.addEventListener('click', () => {
+            if (!isProcessed) return;
+
+            // Convert canvas to blob and download
+            mainCanvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `double-exposure-${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        });
+
+        // Recording (for video textures)
+        recordBtn.addEventListener('click', () => {
+            if (!isProcessed) return;
+
+            recordBtn.classList.add('recording');
+            recordBtn.disabled = true;
+            recordBtn.textContent = '● Recording...';
+            recordedChunks = [];
+
+            const stream = mainCanvas.captureStream(30);
+            mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'video/webm;codecs=vp9',
+                videoBitsPerSecond: 5000000
+            });
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+
+                downloadVideoBtn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `double-exposure-${Date.now()}.webm`;
+                    a.click();
+                };
+
+                downloadVideoBtn.style.display = 'inline-block';
+                recordBtn.classList.remove('recording');
+                recordBtn.disabled = false;
+                recordBtn.textContent = '● Record (5s)';
+            };
+
+            mediaRecorder.start();
+
+            setTimeout(() => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+
+</html>
