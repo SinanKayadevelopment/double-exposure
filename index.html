@@ -498,13 +498,6 @@
                 <input type="range" id="videoPosY" min="-100" max="100" value="0" class="slider">
                 <div class="text-center mt-3 text-sm font-semibold text-gray-600"><span id="posYValue">0</span>%</div>
             </div>
-
-            <div class="control-card" id="videoTimeControl" style="display: none;">
-                <label class="block text-sm font-semibold mb-3 text-gray-700">Video Start (Sec)</label>
-                <input type="range" id="videoStartTime" min="0" max="100" value="0" step="0.1" class="slider">
-                <div class="text-center mt-3 text-sm font-semibold text-gray-600"><span id="startTimeValue">0</span>s
-                </div>
-            </div>
         </div>
 
         <!-- Action Buttons -->
@@ -746,10 +739,6 @@
         const videoPosYInput = document.getElementById('videoPosY');
         const posYValue = document.getElementById('posYValue');
 
-        const videoTimeControl = document.getElementById('videoTimeControl');
-        const videoStartTimeInput = document.getElementById('videoStartTime');
-        const startTimeValue = document.getElementById('startTimeValue');
-
         const processBtn = document.getElementById('processBtn');
         const recordBtn = document.getElementById('recordBtn');
         const downloadImageBtn = document.getElementById('downloadImageBtn');
@@ -819,16 +808,6 @@
                 textureVideoPreview.play();
 
                 textureMedia = hiddenTextureVideo; // Use the hidden video element
-
-                // Update slider max when video meta loads
-                textureMedia.onloadedmetadata = () => {
-                    if (videoStartTimeInput) {
-                        videoStartTimeInput.max = textureMedia.duration;
-                        videoStartTimeInput.value = 0;
-                        startTimeValue.textContent = '0';
-                    }
-                };
-
                 textureMedia.src = url;
                 textureMedia.loop = true;
                 textureMedia.muted = true;
@@ -921,12 +900,10 @@
                     recordBtn.style.display = 'inline-block';
                     recordBtn.disabled = false; // Enable record button for video
                     downloadImageBtn.style.display = 'none';
-                    if (videoTimeControl) videoTimeControl.style.display = 'block';
                 } else {
                     downloadImageBtn.style.display = 'inline-block';
                     downloadImageBtn.disabled = false; // Enable download image button for image
                     recordBtn.style.display = 'none';
-                    if (videoTimeControl) videoTimeControl.style.display = 'none';
                 }
 
                 // Play video if texture is video
@@ -1156,16 +1133,6 @@
         videoPosYInput.addEventListener('input', (e) => {
             posYValue.textContent = e.target.value;
         });
-
-        if (videoStartTimeInput) {
-            videoStartTimeInput.addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
-                startTimeValue.textContent = val.toFixed(1);
-                if (textureMedia && textureType === 'video') {
-                    textureMedia.currentTime = val;
-                }
-            });
-        }
 
         // Download Image (for static textures)
         downloadImageBtn.addEventListener('click', () => {
