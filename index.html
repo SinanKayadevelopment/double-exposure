@@ -927,6 +927,9 @@
         // Animation Loop
         let offCanvas = null;
         let offCtx = null;
+        let lastFrameTime = 0;
+        const targetFPS = 30;
+        const frameInterval = 1000 / targetFPS;
 
         function startAnimation() {
             if (animationId) {
@@ -939,13 +942,24 @@
                 offCanvas.width = mainCanvas.width;
                 offCanvas.height = mainCanvas.height;
                 offCtx = offCanvas.getContext('2d', {
-                    willReadFrequently: true,
-                    alpha: true
+                    willReadFrequently: false,
+                    alpha: true,
+                    desynchronized: true
                 });
             }
 
-            function render() {
+            function render(currentTime) {
                 if (!isProcessed || !maskCanvas || !textureMedia || !portraitImage) return;
+
+                // Throttle to target FPS
+                const elapsed = currentTime - lastFrameTime;
+                if (elapsed < frameInterval) {
+                    if (textureType === 'video') {
+                        animationId = requestAnimationFrame(render);
+                    }
+                    return;
+                }
+                lastFrameTime = currentTime - (elapsed % frameInterval);
 
                 const canvasWidth = mainCanvas.width;
                 const canvasHeight = mainCanvas.height;
@@ -959,7 +973,7 @@
                     const bgCanvas = document.createElement('canvas');
                     bgCanvas.width = canvasWidth;
                     bgCanvas.height = canvasHeight;
-                    const bgCtx = bgCanvas.getContext('2d');
+                    const bgCtx = bgCanvas.getContext('2d', { alpha: true });
 
                     // Draw full image with blur
                     bgCtx.filter = `blur(${blurAmount}px)`;
@@ -1071,12 +1085,12 @@
                 }
             }
 
-            render();
+            render(0);
 
             // If texture is image, re-render only when controls change
             if (textureType === 'image') {
                 const reRender = () => {
-                    if (isProcessed) render();
+                    if (isProcessed) render(performance.now());
                 };
 
                 videoBlendInput.removeEventListener('input', reRender);
